@@ -55,7 +55,7 @@ fn build_graph(input_lines: &Vec<InputLine>) -> Graph {
     return graph;
 }
 
-fn find_nice_vertex(graph: &Graph, path_counts: &HashMap<String, i32>) -> String{
+fn find_nice_vertex(graph: &Graph, path_counts: &HashMap<String, i64>) -> String{
     for vertex in graph.vertices.iter(){
         if path_counts.contains_key(vertex){
             continue;
@@ -74,13 +74,12 @@ fn find_nice_vertex(graph: &Graph, path_counts: &HashMap<String, i32>) -> String
     panic!()
 }
 
-fn count_paths(graph: &Graph) -> HashMap<String, i32> {
-    let mut path_counts: HashMap<String, i32> = HashMap::new();
-    path_counts.insert("you".to_string(), 1);
+fn count_paths(graph: &Graph, start:&str) -> HashMap<String, i64> {
+    let mut path_counts: HashMap<String, i64> = HashMap::new();
+    path_counts.insert(start.to_string(), 1);
     // We need to find a vertex such that all of its incoming edges already have a path_count
     while path_counts.len() < graph.vertices.len() {
         let nice_vertex = find_nice_vertex(graph, &path_counts);
-        println!("L {} nv {}", path_counts.len(), nice_vertex);
         let count = graph.backward_adjacency[&nice_vertex].iter().map(|v| path_counts[v]).sum();
         path_counts.insert(nice_vertex, count);
     }
@@ -96,7 +95,12 @@ fn main() {
     // Add the number of paths to this vertex to all its children.
     let graph = build_graph(&input_lines);
 
-    let path_counts = count_paths(&graph);
+    let svr_path_counts = count_paths(&graph, "svr");
+    let fft_path_counts = count_paths(&graph, "fft");
+    let dac_path_counts = count_paths(&graph, "dac");
+
     // println!("Graph: {:?}", graph);
-    println!("Paths: {:?}", path_counts["out"])
+    println!("svr -> fft {} \nsvr -> dac {}", svr_path_counts["fft"], svr_path_counts["dac"]);
+    println!("fft -> dac {} \nfft -> out {}", fft_path_counts["dac"], fft_path_counts["out"] );
+    println!("dac -> fft {} \ndac -> out {}", dac_path_counts["fft"], dac_path_counts["out"] );
 }
